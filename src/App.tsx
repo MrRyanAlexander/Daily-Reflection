@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 
 /**
  * Daily Reflection – Minimal React UI that matches the described flow:
@@ -47,9 +47,10 @@ export default function App() {
       if (!r.ok) throw new Error(`Server error ${r.status}`);
       const data = (await r.json()) as EvalResult;
       setResult(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // For local preview without a backend, fall back to a tiny mock so you can see the UI.
-      console.warn("Falling back to mock evaluate:", err?.message);
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn("Falling back to mock evaluate:", message);
       setResult(mockEvaluate(text));
       setError(
         "Using demo feedback because the server endpoint is not available. Wire /api/evaluate to OpenAI when you deploy."
@@ -121,7 +122,7 @@ export default function App() {
             <div className="p-4 sm:p-6">
               <h2 className="text-lg font-bold text-pink-700 dark:text-pink-300" style={{ fontFamily: "Baloo 2, system-ui" }}>Your original</h2>
               <p className="mt-2 text-sm opacity-80" style={{ fontFamily: "Nunito, system-ui" }}>We always show your words first, unchanged.</p>
-              <OriginalPreview text={text} issues={result?.issues ?? []} mode={mode} />
+              <OriginalPreview text={text} issues={result?.issues ?? []} />
             </div>
           </div>
 
@@ -173,7 +174,7 @@ export default function App() {
 
 // ---------- Components ----------
 
-function ModeToggle({ mode, setMode }: { mode: "overview" | "focus"; setMode: (m: any) => void }) {
+function ModeToggle({ mode, setMode }: { mode: "overview" | "focus"; setMode: (m: "overview" | "focus") => void }) {
   return (
     <div className="flex items-center gap-1 bg-white/15 rounded-xl p-1 border border-white/20">
       {(["overview", "focus"] as const).map((m) => (
@@ -200,7 +201,7 @@ function Meter({ value }: { value: number }) {
   );
 }
 
-function OriginalPreview({ text, issues, mode }: { text: string; issues: Issue[]; mode: "overview" | "focus" }) {
+function OriginalPreview({ text, issues }: { text: string; issues: Issue[] }) {
   if (!text) {
     return (
       <p className="mt-3 text-base leading-7 bg-white/70 dark:bg-neutral-900/40 border border-pink-200/60 dark:border-pink-900/40 rounded-xl p-3">

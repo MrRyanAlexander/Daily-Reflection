@@ -1,0 +1,17 @@
+[build]
+  command   = "npm run build"
+  publish   = "dist"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Optional: set framework detection if Netlify doesn’t auto-detect Vite
+[build.environment]
+  NODE_VERSION = "18"
+
+# Redirect API requests from the frontend to the serverless function
+[[redirects]]
+  from = "/api/*"
+  to   = "/.netlify/functions/:splat"
+  status = 200
